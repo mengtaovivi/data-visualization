@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.AlarmCoverageMapper">
+    <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.TkAlarmCoverage">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="operation_id" jdbcType="VARCHAR" property="operationId"/>
+        <result column="operation_os" jdbcType="VARCHAR" property="operationOs"/>
+        <result column="all_operation_os" jdbcType="VARCHAR" property="allOperationOs"/>
+        <result column="used_operation_os" jdbcType="VARCHAR" property="usedOperationOs"/>
+        <result column="zone" jdbcType="VARCHAR" property="zone"/>
+        <result column="create_date" jdbcType="VARCHAR" property="createDate"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+      id, operation_id, operation_os, all_operation_os, used_operation_os, zone, create_date
+    </sql>
+    <select id="get" parameterType="com.taikang.dataVis.domain.TkAlarmCoverage" resultMap="BaseResultMap">
+		 select
+        <include refid="Base_Column_List"/>
+        from tk_alarm_coverage
+         where id = #{id,jdbcType=BIGINT}
+	</select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tk_alarm_coverage
+    </select>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.TkAlarmCoverage">
+        insert into tk_alarm_coverage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+           <if test="id != null">
+                id,
+            </if>
+            <if test="operationId != null">
+                operation_id,
+            </if>
+            <if test="operationOs != null">
+                operation_os,
+            </if>
+            <if test="allOperationOs != null">
+                all_operation_os,
+            </if>
+            <if test="usedOperationOs != null">
+                used_operation_os,
+            </if>
+            <if test="zone != null">
+                zone,
+            </if>
+            <if test="createDate != null">
+                create_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="operationId != null">
+                #{operationId,jdbcType=VARCHAR},
+            </if>
+            <if test="operationOs != null">
+                #{operationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="allOperationOs != null">
+                #{allOperationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="usedOperationOs != null">
+                #{usedOperationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="zone != null">
+                #{zone,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null">
+                #{createDate,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.taikang.dataVis.domain.TkAlarmCoverage">
+        update tk_alarm_coverage
+        <set>
+            <if test="operationId != null">
+                operation_id = #{operationId,jdbcType=VARCHAR},
+            </if>
+            <if test="operationOs != null">
+                operation_os = #{operationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="allOperationOs != null">
+                all_operation_os = #{allOperationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="usedOperationOs != null">
+                used_operation_os = #{usedOperationOs,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--根据获取所有operation_os-->
+    <!-- <select id="getAlloperationOs" resultType="String" parameterType="String">
+        SELECT  CONCAT(operation_os,zone) oszone FROM tk_alarm_coverage
+    </select> -->
+
+
+	<!--enable_flag取默认值，id是自动-->
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tk_alarm_coverage (operation_id, operation_os, all_operation_os, 
+        used_operation_os,zone,create_date) 
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.operationId},#{item.operationOs},#{item.allOperationOs},
+            #{item.usedOperationOs},#{item.zone},#{item.createDate})
+        </foreach>
+    </insert>
+    
+    <!-- <update id="updateBatchByOsSystem"  parameterType="com.taikang.dataVis.screeneen.domain.TkAlarmCoverage">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";" >
+        update tk_alarm_coverage 
+        <set>
+            <if test="item.operationId != null">
+                 operation_id = #{item.operationId,jdbcType=VARCHAR},
+            </if>
+            <if test="item.allOperationOs != null">
+                all_operation_os = #{item.allOperationOs,jdbcType=VARCHAR},
+            </if>
+            <if test="item.usedOperationOs != null">
+                used_operation_os = #{item.usedOperationOs,jdbcType=VARCHAR},
+            </if>
+        </set>
+         where operation_os = #{item.operationOs,jdbcType=VARCHAR} 
+         and zone = #{item.zone,jdbcType=VARCHAR}
+        </foreach>    
+    </update>     -->
+    
+    <!-- 根据平台类型取得覆盖度数据host -->
+	<select id="getCoverageHostCount" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(SELECT 'all' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('all') and operation_os = 'linux' order by create_date desc limit 1)
+		union all
+		(SELECT 'all' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('all') and operation_os = 'windows' order by create_date desc limit 1)
+		union all
+		(SELECT 'test' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test') and operation_os = 'linux' order by create_date desc limit 1)
+		union all
+		(SELECT 'test' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test') and operation_os = 'windows' order by create_date desc limit 1)
+		union all
+		(SELECT 'dev' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test2') and operation_os = 'linux' order by create_date desc limit 1)
+		union all
+		(SELECT 'dev' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test2') and operation_os = 'windows' order by create_date desc limit 1)
+		union all
+		(SELECT 'pro' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('prod2','tkwh') and operation_os = 'linux' order by create_date desc limit 1)
+		union all
+		(SELECT 'pro' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('prod2','tkwh') and operation_os = 'windows' order by create_date desc limit 1)
+	</select>
+	<!-- 根据平台类型取得覆盖度数据rdb -->
+	<select id="getCoverageRdbCount" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(SELECT 'all' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('all') and operation_os = 'mysql' order by create_date desc limit 1)
+		union all
+		(SELECT 'all' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('all') and operation_os = 'psql' order by create_date desc limit 1)
+		union all
+		(SELECT 'test' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test') and operation_os = 'mysql' order by create_date desc limit 1)
+		union all
+		(SELECT 'test' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test') and operation_os = 'psql' order by create_date desc limit 1)
+		union all
+		(SELECT 'dev' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test2') and operation_os = 'mysql' order by create_date desc limit 1)
+		union all
+		(SELECT 'dev' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('test2') and operation_os = 'psql' order by create_date desc limit 1)
+		union all
+		(SELECT 'pro' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('prod2','tkwh') and operation_os = 'mysql' order by create_date desc limit 1)
+		union all
+		(SELECT 'pro' as zone,operation_os,used_operation_os,all_operation_os FROM `tk_alarm_coverage` 
+		where zone in ('prod2','tkwh') and operation_os = 'psql' order by create_date desc limit 1)
+	</select>
+</mapper>

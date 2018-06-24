@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.ElectricityCountMapper">
+
+    <sql id="Base_Column_List">
+        id, year, month, type, value,created_date,computer_room_name
+    </sql>
+
+    <select id="findAllElectricity" resultType="ElectricityCount">
+        select <include refid="Base_Column_List"/> from tk_electricity_count
+    </select>
+
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="ElectricityCount">
+        insert into tk_electricity_count
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="year != null">
+                year,
+            </if>
+            <if test="month != null">
+                month,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="value != null">
+                value,
+            </if>
+            <if test="createdDate != null">
+                created_date,
+            </if>
+            <if test="computerRoomName != null">
+                computer_room_name
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="year != null">
+                #{year,jdbcType=VARCHAR},
+            </if>
+            <if test="month != null">
+                #{month,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="value != null">
+                #{value,jdbcType=VARCHAR},
+            </if>
+            <if test="createdDate != null">
+                #{createdDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="computerRoomName != null">
+                #{computerRoomName,jdbcType=VARCHAR}
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="ElectricityCount">
+        update tk_electricity_count
+        <set>
+            <if test="year != null">
+                year = #{year,jdbcType=VARCHAR},
+            </if>
+            <if test="month != null">
+                month = #{month,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="value != null">
+                value = #{value,jdbcType=VARCHAR},
+            </if>
+            <if test="computerRoomName != null">
+                computer_room_name = #{computerRoomName,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="getElectricityCountsByYear" parameterType="String" resultType="ElectricityCount">
+        SELECT year, month, type, value, created_date,computer_room_name FROM tk_electricity_count WHERE year = #{year} order by year ,month,type
+    </select>
+
+    <select id="getElectricityMonthByYear" parameterType="String" resultType="ElectricityCount">
+        select month from tk_electricity_count where year = #{year}  group by month order by month
+    </select>
+
+    <!--获取去重所有的时间【格式：yyyy-MM】-->
+    <select id="getYearAndMonth" resultType="String">
+        SELECT DISTINCT CONCAT(YEAR,'-',MONTH) times FROM tk_electricity_count
+    </select>
+
+    <!--根据年月获取电力信息，准备修改-->
+    <select id="getElectricityCountByTime" resultType="ElectricityCount" parameterType="Map">
+        SELECT <include refid="Base_Column_List"/> FROM tk_electricity_count WHERE YEAR = #{year} AND MONTH = #{month} ORDER BY computer_room_name
+    </select>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.DictMapper">
+	<!--根据dict_code查询dict-->
+	<select id="getDictByCode" parameterType="String" resultType="Dict">
+		select id, dict_code, dict_value, dict_name from tk_dict where dict_code = #{_parameter}
+	</select>
+	<select id="findAll" resultType="Dict">
+		select id,dict_code,dict_value,dict_name from tk_dict
+	</select>
+	<select id="findOne" resultType="Dict">
+		select id,dict_code,dict_value,dict_name from tk_dict where id = #{id}
+	</select>
+
+	<insert id="save" parameterType="Dict">
+		insert into tk_dict(id, dict_code, dict_value, dict_name)
+		values (#{id},#{dictCode},#{dictValue},#{dictName})
+	</insert>
+
+	<update id="update" parameterType="Dict">
+		update tk_dict
+		set id = #{id}, dict_code = #{dictCode}, dict_value = #{dictValue}, dict_name = #{dictName}
+		where id = #{id}
+	</update>
+
+	<delete id="deleteDicts" parameterType="long">
+		delete from tk_dict where id = #{id}
+	</delete>
+</mapper>

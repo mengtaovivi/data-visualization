@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.RDBMapper">
+	<resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.RDBModel">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<id column="rdb_id" jdbcType="VARCHAR" property="rdbId" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="rdb_name" jdbcType="VARCHAR" property="rdbName" />
+		<result column="status" jdbcType="VARCHAR" property="status" />
+		<result column="master_ip" jdbcType="VARCHAR" property="masterIp" />
+		<result column="rvip" jdbcType="VARCHAR" property="rvip" />
+		<result column="wvip" jdbcType="VARCHAR" property="wvip" />
+		<result column="cloud_type" jdbcType="VARCHAR" property="cloudType" />
+		<result column="rdb_engine" jdbcType="VARCHAR" property="rdbEngine" />
+		<result column="zone_name" jdbcType="VARCHAR" property="zoneName" />
+		<result column="refresh_time" jdbcType="VARCHAR" property="refreshTime" />
+	</resultMap>
+	<!-- 查询Host列表 -->
+	<select id="getAllIp" resultType="String">
+		select distinct master_ip from tk_rdb where lower(cloud_type) = 'qingcloud'
+	</select>
+	<!-- 插入Host列表 -->
+	<insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.RDBModel">
+		insert into tk_rdb
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+		    <if test="id != null">
+				id,
+			</if>
+			<if test="rdbId != null">
+				rdb_id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="rdbName != null">
+				rdb_name,
+			</if>
+			<if test="status != null">
+				status,
+			</if>
+			<if test="masterIp != null">
+				master_ip,
+			</if>
+			<if test="rvip != null">
+				rvip,
+			</if>
+			<if test="wvip != null">
+				wvip,
+			</if>
+			<if test="cloudType != null">
+				cloud_type,
+			</if>
+			<if test="rdbEngine != null">
+				rdb_engine,
+			</if>
+			<if test="zoneName != null">
+				zone_name,
+			</if>
+			<if test="refreshTime != null">
+				refresh_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="rdbId != null">
+				#{rdbId,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="rdbName != null">
+				#{rdbName,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				#{status,jdbcType=VARCHAR},
+			</if>
+			<if test="masterIp != null">
+				#{masterIp,jdbcType=VARCHAR},
+			</if>
+			<if test="rvip != null">
+				#{rvip,jdbcType=VARCHAR},
+			</if>
+			<if test="wvip != null">
+				#{wvip,jdbcType=VARCHAR},
+			</if>
+			<if test="cloudType != null">
+				#{cloudType,jdbcType=VARCHAR},
+			</if>
+			<if test="rdbEngine != null">
+				#{rdbEngine,jdbcType=VARCHAR},
+			</if>
+			<if test="zoneName != null">
+				#{zoneName,jdbcType=VARCHAR},
+			</if>
+			<if test="refreshTime != null">
+				#{refreshTime,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<!-- 批量插入Host列表 -->
+    <insert id="saveBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into tk_rdb (
+        id,
+		rdb_id,
+        name,
+        rdb_name,
+        status,
+        master_ip,
+        rvip,
+        wvip,
+        cloud_type,
+        rdb_engine,
+        zone_name,
+        refresh_time)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.id},#{item.rdbId},
+            #{item.name},#{item.rdbName},#{item.status},#{item.masterIp},
+            #{item.rvip},#{item.wvip},#{item.cloudType},#{item.rdbEngine},#{item.zoneName},
+            #{item.refreshTime}
+            )
+        </foreach>
+    </insert>
+    <!-- 删除所有数据 -->
+    <delete id="deleteAll">
+		delete from tk_rdb
+	</delete>
+	
+	<select id="getBaseCount" parameterType="String" resultType="Long" >
+       SELECT count(*) count FROM tk_rdb WHERE status in ('active','stopped')
+       <if test="_parameter != null and _parameter =='pro'">
+			and zone_name in ('prod2','tkwh')
+	   </if>
+	   <if test="_parameter != null and _parameter =='dev'">
+			and zone_name ='test2'
+	   </if>
+	    <if test="_parameter != null and _parameter =='test'">
+			and zone_name ='test'
+	   </if>
+    </select>
+    
+    <select id="getIntersectionCount" parameterType="String" resultType="Long" >
+       SELECT count(*) count FROM tk_rdb WHERE status in ('active','stopped')
+       <if test="_parameter != null and _parameter =='pro'">
+			and zone_name in ('prod2','tkwh')
+	   </if>
+	   <if test="_parameter != null and _parameter =='dev'">
+			and zone_name ='test2'
+	   </if>
+	    <if test="_parameter != null and _parameter =='test'">
+			and zone_name ='test'
+	   </if>
+	    AND (master_ip in(SELECT DISTINCT ip FROM tk_ip_itemscount) 
+       OR rvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)
+       OR wvip in(SELECT DISTINCT ip FROM tk_ip_itemscount))
+    </select>
+    
+    <select id="getZoneAndOs"  resultType="String" >
+      SELECT DISTINCT CONCAT(zone_name,',',rdb_engine) zone_and_os FROM tk_rdb 
+      WHERE status in ('active','stopped') AND zone_name !='' AND rdb_engine !='' 
+    </select>  
+    
+    <select id="getZones"  resultType="String" >
+      SELECT DISTINCT zone_name FROM tk_rdb 
+      WHERE status in ('active','stopped') AND zone_name !='' 
+    </select>  
+    
+    
+    <!-- 监控的数量统计  DB2,MySQL,Oracle,other -->
+	<select id="getRdbAlarmCoverageresult" resultType="String">
+		SELECT  count(*) FROM tk_rdb WHERE  `status`='active' 
+		<if test="zone != null and zone !='all'">
+			and zone_name =#{zone}
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='DB2'">
+			and rdb_engine in('DB2','db2')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='MySQL'">
+			and rdb_engine in('MySQL','mysql')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='Oracle'">
+			and rdb_engine in('Oracle','oracle')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='other'">
+			and rdb_engine not in('Oracle','oracle','MySQL','mysql','DB2','db2')
+	   </if>
+	</select>
+	
+	<select id="getRdbAlarmCoveragereUsedsult" resultType="String">
+		SELECT  count(*) FROM tk_rdb WHERE  `status`='active' 
+		<if test="zone != null and zone !='all'">
+			and zone_name =#{zone}
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='DB2'">
+			and rdb_engine in('DB2','db2')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='MySQL'">
+			and rdb_engine in('MySQL','mysql')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='Oracle'">
+			and rdb_engine in('Oracle','oracle')
+	   </if>
+	   <if test="rdbEngines != null and rdbEngines =='other'">
+			and rdb_engine not in('Oracle','oracle','MySQL','mysql','DB2','db2')
+	   </if>
+       AND (master_ip in(SELECT DISTINCT ip FROM tk_ip_itemscount) 
+       OR rvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)
+       OR wvip in(SELECT DISTINCT ip FROM tk_ip_itemscount))
+	</select>
+	
+	
+	
+	<select id="getCoverageAllcountBytype"  resultType="java.util.HashMap">
+		SELECT  CONCAT(rdb_engine,'_',zone_name) type, count(*) zcount FROM tk_rdb WHERE  `status`='active' 
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)
+        AND (master_ip in(SELECT DISTINCT ip FROM tk_ip_itemscount) 
+       OR rvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)
+       OR wvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)) GROUP BY rdb_engine ,zone_name 
+       UNION
+       SELECT  rdb_engine type, count(*) zcount FROM tk_rdb WHERE  `status`='active' 
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)
+        AND (master_ip in(SELECT DISTINCT ip FROM tk_ip_itemscount) 
+       OR rvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)
+       OR wvip in(SELECT DISTINCT ip FROM tk_ip_itemscount)) GROUP BY rdb_engine 
+	</select>
+	
+	<select id="getAllcountBytype"  resultType="java.util.HashMap">
+		SELECT  CONCAT(rdb_engine,'_',zone_name) type, count(*) zcount FROM tk_rdb WHERE  `status`='active'  
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)
+        GROUP BY rdb_engine ,zone_name 
+        UNION
+        SELECT  rdb_engine type, count(*) zcount FROM tk_rdb WHERE  `status`='active'  
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)
+        GROUP BY rdb_engine  
+	</select>
+    
+    <select id="getAllRDBEngine"  resultType="String">
+		SELECT DISTINCT rdb_engine FROM tk_rdb WHERE  `status`='active'  
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)
+	</select>
+    
+</mapper>

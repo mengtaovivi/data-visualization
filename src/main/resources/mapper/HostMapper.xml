@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.HostMapper">
+	<resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.HostModel">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<result column="hostname" jdbcType="VARCHAR" property="hostname" />
+		<result column="display_name" jdbcType="VARCHAR" property="display_name" />
+		<result column="ip" jdbcType="VARCHAR" property="ip" />
+		<result column="status" jdbcType="VARCHAR" property="status" />
+		<result column="device_id" jdbcType="VARCHAR" property="device_id" />
+		<result column="mem_size" jdbcType="VARCHAR" property="mem_size" />
+		<result column="disk_size" jdbcType="VARCHAR" property="disk_size" />
+		<result column="cpus" jdbcType="VARCHAR" property="cpus" />
+		<result column="os_release" jdbcType="VARCHAR" property="os_release" />
+		<result column="os_system" jdbcType="VARCHAR" property="os_system" />
+		<result column="id_in_cloud" jdbcType="VARCHAR" property="id_in_cloud" />
+		<result column="cloud_type" jdbcType="VARCHAR" property="cloud_type" />
+		<result column="zone_name" jdbcType="VARCHAR" property="zone_name" />
+		<result column="object_version" jdbcType="VARCHAR" property="object_version" />
+		<result column="creator" jdbcType="VARCHAR" property="creator" />
+		<result column="ctime" jdbcType="VARCHAR" property="ctime" />
+		<result column="create_time" jdbcType="VARCHAR" property="create_time" />
+	</resultMap>
+	<!-- 查询Host列表 -->
+	<select id="getAllIp" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud'
+	</select>
+	<!-- 查询Instance列表 -->
+	<select id="getAllIpInstance" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud' 
+		and hostname not in (select hostname from tk_host where hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+	</select>
+	<!-- 查询组件unit列表 -->
+	<select id="getAllIpUnit" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud' 
+		and (hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+	</select>
+	<!-- 插入Host列表 -->
+	<insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.HostModel">
+		insert into tk_host
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="hostname != null">
+				hostname,
+			</if>
+			<if test="display_name != null">
+				display_name,
+			</if>
+			<if test="ip != null">
+				ip,
+			</if>
+			<if test="status != null">
+				status,
+			</if>
+			<if test="device_id != null">
+				device_id,
+			</if>
+			<if test="mem_size != null">
+				mem_size,
+			</if>
+			<if test="disk_size != null">
+				disk_size,
+			</if>
+			<if test="cpus != null">
+				cpus,
+			</if>
+			<if test="os_release != null">
+				os_release,
+			</if>
+			<if test="os_system != null">
+				os_system,
+			</if>
+			<if test="id_in_cloud != null">
+				id_in_cloud,
+			</if>
+			<if test="cloud_type != null">
+				cloud_type,
+			</if>
+			<if test="zone_name != null">
+				zone_name,
+			</if>
+			<if test="object_version != null">
+				object_version,
+			</if>
+			<if test="creator != null">
+				creator,
+			</if>
+			<if test="ctime != null">
+				ctime,
+			</if>
+			<if test="create_time != null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="hostname != null">
+				#{hostname,jdbcType=VARCHAR},
+			</if>
+			<if test="display_name != null">
+				#{display_name,jdbcType=VARCHAR},
+			</if>
+			<if test="ip != null">
+				#{ip,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				#{status,jdbcType=VARCHAR},
+			</if>
+			<if test="device_id != null">
+				#{device_id,jdbcType=VARCHAR},
+			</if>
+			<if test="mem_size != null">
+				#{mem_size,jdbcType=VARCHAR},
+			</if>
+			<if test="disk_size != null">
+				#{disk_size,jdbcType=VARCHAR},
+			</if>
+			<if test="cpus != null">
+				#{cpus,jdbcType=VARCHAR},
+			</if>
+			<if test="os_release != null">
+				#{os_release,jdbcType=VARCHAR},
+			</if>
+			<if test="os_system != null">
+				#{os_system,jdbcType=VARCHAR},
+			</if>
+			<if test="id_in_cloud != null">
+				#{id_in_cloud,jdbcType=VARCHAR},
+			</if>
+			<if test="cloud_type != null">
+				#{cloud_type,jdbcType=VARCHAR},
+			</if>
+			<if test="zone_name != null">
+				#{zone_name,jdbcType=VARCHAR},
+			</if>
+			<if test="object_version != null">
+				#{object_version,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="ctime != null">
+				#{ctime,jdbcType=VARCHAR},
+			</if>
+			<if test="create_time != null">
+				#{create_time,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<!-- 批量插入Host列表 -->
+    <insert id="saveBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into tk_host (
+		id,
+		hostname,
+		display_name,
+		ip,
+		status,
+		device_id,
+		mem_size,
+		disk_size,
+		cpus,
+		os_release,
+		os_system,
+		id_in_cloud,cloud_type,
+		zone_name,object_version,creator,ctime,create_time )
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.id},
+            #{item.hostname},#{item.display_name},#{item.ip},#{item.status},#{item.device_id},
+            #{item.mem_size},#{item.disk_size},#{item.cpus},#{item.os_release},#{item.os_system},
+            #{item.id_in_cloud},
+            #{item.cloud_type},#{item.zone_name},#{item.object_version},#{item.creator},#{item.ctime},#{item.create_time}
+            )
+        </foreach>
+    </insert>
+    <!-- 删除所有数据 -->
+    <delete id="deleteAll">
+		delete from tk_host
+	</delete>
+	
+	
+	<!-- 监控的数量统计  windows,linux -->
+	<select id="getInstanceAlarmCoverageresult" resultType="String">
+		SELECT  count(*) FROM tk_host WHERE  `status`='运营中' 
+		<if test="zone != null and zone !='all'">
+			and zone_name =#{zone}
+	   </if>
+	   <if test="osSystems != null and osSystems =='windows'">
+			and os_system in('windows','Windows')
+	   </if>
+	   <if test="osSystems != null and osSystems =='linux'">
+			and os_system in('linux','Linux')
+	   </if>
+	</select>
+	
+	<select id="getInstanceAlarmCoveragereUsedsult" resultType="String">
+		SELECT  count(*) FROM tk_host WHERE  `status`='运营中' 
+		<if test="zone != null and zone !='all'">
+			and zone_name =#{zone}
+	   </if>
+	   <if test="osSystems != null and osSystems =='windows'">
+			and os_system in('windows','Windows')
+	   </if>
+	   <if test="osSystems != null and osSystems =='linux'">
+			and os_system in('linux','Linux')
+	   </if>
+        AND ip in(SELECT ip FROM tk_ip_itemscount)
+	</select>
+	
+	
+	
+	<select id="getCoverageAllcountBytype" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  CONCAT(os_system,'_',zone_name) type, count(*) zcount FROM tk_host WHERE  `status`='运营中' 
+        AND ( INSTR(ip,#{serch_word})>0 OR INSTR (os_system ,#{serch_word})>0 
+        OR INSTR (os_release ,#{serch_word})>0 OR INSTR (display_name ,#{serch_word})>0)
+        AND ip in(SELECT ip FROM tk_ip_itemscount) GROUP BY os_system ,zone_name 
+	</select>
+	
+	<select id="getAllcountBytype" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  CONCAT(os_system,'_',zone_name) type, count(*) zcount FROM tk_host WHERE  `status`='运营中' 
+        AND ( INSTR(ip,#{serch_word})>0 OR INSTR (os_system ,#{serch_word})>0 
+        OR INSTR (os_release ,#{serch_word})>0 OR INSTR (display_name ,#{serch_word})>0)
+        GROUP BY os_system ,zone_name 
+	</select>
+</mapper>

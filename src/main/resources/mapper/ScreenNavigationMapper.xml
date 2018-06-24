@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.ScreenNavigationMapper">
+	<resultMap id="ScreenNavigation" type="com.taikang.dataVis.domain.ScreenNavigation">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="title" jdbcType="VARCHAR" property="title" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="image" jdbcType="VARCHAR" property="image" />
+		<result column="operator" jdbcType="VARCHAR" property="operator" />
+		<result column="operate_time" jdbcType="VARCHAR" property="operate_time" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+	</resultMap>
+	<sql id="Base_Column_List">
+	      id, title, url, image, operator, operate_time, remark
+	</sql>
+	<!-- 查询一条 -->
+	<select id="getOne" parameterType="java.util.Map" resultMap="ScreenNavigation">
+		select <include refid="Base_Column_List"/> 
+		from tk_screen_navigation where id = #{id,jdbcType=BIGINT}
+	</select>
+	<!-- 查询多条 -->
+	<select id="getMany" parameterType="java.util.Map" resultMap="ScreenNavigation">
+		select <include refid="Base_Column_List"/> from tk_screen_navigation
+	</select>
+	<!-- 添加 -->
+	<insert id="save" parameterType="ScreenNavigation">
+		insert into tk_screen_navigation (title, url, image, operator, operate_time, remark) values 
+		(
+		 #{title,jdbcType=VARCHAR},#{url,jdbcType=VARCHAR},#{image,jdbcType=VARCHAR},
+		 #{operator,jdbcType=VARCHAR},#{operate_time,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterType="ScreenNavigation">
+	    update tk_screen_navigation
+	    <set>
+	      <if test="null != title">title = #{title},</if>
+	      <if test="null != url">url = #{url},</if>
+	      <if test="null != image">image = #{image},</if>
+	      <if test="null != operator">operator = #{operator},</if>
+	      <if test="null != operate_time">operate_time = #{operate_time},</if>
+	      <if test="null != remark">remark = #{remark}</if>
+	    </set>
+	    where id = #{id}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="ScreenNavigation">
+		delete from tk_screen_navigation where id = #{id}
+	</delete>
+</mapper>

@@ -1,0 +1,1 @@
+alter table tk_screen_navigation modify column url LONGTEXT;

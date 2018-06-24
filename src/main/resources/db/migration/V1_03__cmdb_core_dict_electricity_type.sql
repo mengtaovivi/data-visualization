@@ -1,0 +1,2 @@
+INSERT INTO `tk_dict` (`dict_code`, `dict_value`, `dict_name`, `enable_flag`) VALUES
+    ('electricity_type','[{\"key\":\"it\",\"label\":\"IT用电\"},{\"key\":\" other\",\"label\":\"其他\"},{\"key\":\"air\",\"label\":\"空调用电\"}]','电力信息配置','Enabled');

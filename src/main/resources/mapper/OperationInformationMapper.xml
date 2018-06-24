@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.OperationInformationMapper">
+    <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.TkOperationInformation">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="operation_ip" jdbcType="VARCHAR" property="operationIp"/>
+         <result column="operation_type" jdbcType="VARCHAR" property="operationType"/>
+        <result column="operation_date" jdbcType="VARCHAR" property="operationDate"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+      id, operation_ip, operation_type, operation_date
+    </sql>
+    <select id="get" parameterType="com.taikang.dataVis.domain.TkOperationInformation" resultMap="BaseResultMap">
+		 select
+        <include refid="Base_Column_List"/>
+        from tk_operation_information
+         where id = #{id,jdbcType=BIGINT}
+	</select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tk_operation_information
+    </select>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.TkOperationInformation">
+        insert into tk_operation_information
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+           <if test="id != null">
+                id,
+            </if>
+            <if test="operationIp != null">
+                operation_ip,
+            </if>
+            <if test="operationType != null">
+                operation_type,
+            </if>
+            <if test="operationDate != null">
+                operation_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="operationIp != null">
+                #{operationIp,jdbcType=VARCHAR},
+            </if>
+            <if test="operationType != null">
+                #{operationType,jdbcType=VARCHAR},
+            </if>
+            <if test="operationDate != null">
+                #{operationDate,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.taikang.dataVis.domain.TkOperationInformation">
+        update tk_operation_information
+        <set>
+            <if test="operationIp != null">
+                operation_ip = #{operationIp,jdbcType=VARCHAR},
+            </if>
+            <if test="operationType != null">
+                operation_type = #{operationType,jdbcType=VARCHAR},
+            </if>
+            <if test="operationDate != null">
+                operation_date = #{operationDate,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+</mapper>

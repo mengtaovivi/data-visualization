@@ -1,0 +1,52 @@
+﻿server:
+    port: 8083
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+
+spring:
+    profiles: prod
+    datasource:
+        url: jdbc:mysql://100.126.152.82:3306/mnt?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true
+        username: root
+        password: Cloud@123
+    redis:
+        host: localhost
+    main:
+        banner-mode: "console" #在console中输出自定义字符
+
+eureka:
+    instance:
+        appname: dataVis
+        instanceId: dataVis:${spring.application.instance-id:${random.value}}
+        prefer-ip-address: true
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+    client:
+        service-url:
+            defaultZone: http://admin:admin@100.126.152.82:8761/eureka/
+        ## 关闭心跳检测
+        registerWithEureka: true
+        fetchRegistry: true
+
+#zabbix的jdbc配置参数
+jdbc_zabbix:
+  url: jdbc:mysql://100.126.151.214:3306/zabbix?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+  username: zabbix
+  password: 77SHIbian08
+  driver_class_name: com.mysql.jdbc.Driver
+
+#天气预报数据抓取，city_ids'&'是分隔符
+weather_url: http://10.130.151.79:8080/weather-server/weather/getData
+city_ids: beijing-54511&wuhan-57494
+
+#cmdb配置参数
+cmdb: 
+  host_cmdb: cmdb.easyops-only.com
+  host_tool: tool.easyops-only.com
+  org: 1045
+  user: easyops
+  url: http://10.130.152.53
+  skey: P@ssw0rdP@ssw0rd
+  ivparameter: 1234567890123456

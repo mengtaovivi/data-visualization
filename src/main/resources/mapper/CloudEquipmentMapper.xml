@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.CloudEquipmentMapper">
+  <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.CloudEquipment">
+    <id column="id" jdbcType="VARCHAR" property="id"/>
+    <result column="department" jdbcType="VARCHAR" property="department"/>
+    <result column="in_val" jdbcType="VARCHAR" property="inVal"/>
+    <result column="out_val" jdbcType="VARCHAR" property="outVal"/>
+    <result column="replace_val" jdbcType="VARCHAR" property="replaceVal"/>
+    <result column="create_time" jdbcType="VARCHAR" property="createTime"/>
+    <result column="update_time" jdbcType="VARCHAR" property="updateTime"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+      id, department,in_val, out_val, replace_val, create_time, update_time
+  </sql>
+
+  <!--查询最新时间各处云中心设备上下架情况-->
+  <select id="findNewestAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+     from tk_cloud_equipment where create_time = (select max(create_time) from tk_cloud_equipment) 
+     order by department desc 
+  </select>
+  <!--获取所有日期-->
+  <select id="findAllDate" resultType="String">
+    select distinct create_time from tk_cloud_equipment
+  </select>
+  
+  
+  <!--根据创建时间获取列表-->
+  <select id="findByCreateTime" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from tk_cloud_equipment where create_time = #{createTime}
+  </select>
+  
+  
+  <!--批量保存各处云中心设备上下架情况-->
+  <insert id="insertBatch" parameterType="java.util.List">
+    insert into tk_cloud_equipment (id, department,in_val, out_val, replace_val, create_time) VALUES
+    <foreach collection="list" item="item" separator=",">
+      (#{item.id,jdbcType=VARCHAR},#{item.department,jdbcType=VARCHAR},#{item.inVal,jdbcType=VARCHAR}
+      ,#{item.outVal,jdbcType=VARCHAR},#{item.replaceVal,jdbcType=VARCHAR},#{item.createTime,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+  
+  
+  <update id="update" parameterType="ComputerRoomTemperature">
+    update tk_cloud_equipment
+    <set>
+      <if test="null != inVal">in_val = #{inVal},</if>
+      <if test="null != outVal">out_val = #{outVal},</if>
+       <if test="null != replaceVal">replace_val = #{replaceVal},</if>
+      <if test="null != updateTime">update_time = #{updateTime}</if>
+    </set>
+    where id = #{id}
+  </update>
+  
+
+  <delete id="delete" parameterType="java.util.Map">
+    delete from tk_computer_room_temperature where create_time = #{createTime}
+  </delete>
+</mapper>

@@ -1,0 +1,51 @@
+server:
+    port: 8083
+eureka:
+    instance:
+        appname: dataVis
+        instanceId: devops:${spring.application.instance-id:${random.value}}
+        prefer-ip-address: true
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+    client:
+        service-url:
+            defaultZone: http://admin:admin@localhost:8761/eureka/
+        ## 关闭心跳检测
+        registerWithEureka: false
+        fetchRegistry: false
+
+spring:
+    devtools:
+        restart:
+            enabled: true
+    datasource:
+        url: jdbc:mysql://10.130.210.116:3306/mntdev?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true
+        username: mntdev
+        password: Cloud@123
+    main:
+      banner-mode: "console" #在console中输出自定义字符
+
+#flyway配置。版本号的数字间以下划线_分隔开，版本号与描述间以连续的两个下划线__分隔开。如V2_1__cmdb_core_init.sql
+flyway:
+    enabled: false    #flyway开关,默认为true,开发时可先设置为false
+
+#zabbix的jdbc配置参数
+jdbc_zabbix: 
+  url: jdbc:mysql://10.130.211.239:3306/zabbix?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+  username: zabbix
+  password: 77SHIbian01
+  driver_class_name: com.mysql.jdbc.Driver
+
+#天气预报数据抓取，city_ids'&'是分隔符
+weather_url: http://10.130.151.79:8080/weather-server/weather/getData
+city_ids: beijing-54511&wuhan-57494
+
+#cmdb配置参数
+cmdb: 
+  host_cmdb: ${cmdb.host.cmdb}
+  host_tool: ${cmdb.host.tool}
+  org: ${cmdb.host.org}
+  user: ${cmdb.host.user}
+  url: ${cmdb.host.url}
+  skey: ${cmdb.host.skey}
+  ivparameter: ${cmdb.host.ivparameter}

@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.CoveragePercentMapper">
+	<resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.CoveragePercentModel">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<result column="compare_type" jdbcType="VARCHAR" property="compareType" />
+		<result column="compare_count" jdbcType="VARCHAR" property="compareCount" />
+		<result column="base_type" jdbcType="VARCHAR" property="baseType" />
+		<result column="base_count" jdbcType="VARCHAR" property="baseCount" />
+		<result column="intersection_count" jdbcType="VARCHAR" property="intersectionCount" />
+		<result column="percent" jdbcType="VARCHAR" property="percent" />
+		<result column="create_date" jdbcType="VARCHAR" property="createDate" />
+	</resultMap>
+	<!-- 根据平台类型取得覆盖度数据 -->
+	<select id="getCoverageByType" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select a.time_sec,
+		sum(used_operation_os) as value,
+		(case when sum(a.all_operation_os) = 0 then 0 else ROUND((sum(a.used_operation_os) / sum(a.all_operation_os))*100,2) end) as percent,
+		a.metric,a.datetime from 
+		(select 
+		ROUND(UNIX_TIMESTAMP(create_date)) as time_sec,
+		all_operation_os,
+		used_operation_os,
+		'生产' as metric,
+		concat(date_format(create_date,'%Y-%m-%d %H'),':00:00') as datetime
+		from tk_alarm_coverage
+		WHERE zone in ('prod2','tkwh')
+		and operation_os = #{type,jdbcType=VARCHAR}
+		) a
+		group by a.time_sec,a.datetime)
+		union
+		(select a.time_sec,
+		sum(used_operation_os) as value,
+		(case when sum(a.all_operation_os) = 0 then 0 else ROUND((sum(a.used_operation_os) / sum(a.all_operation_os))*100,2) end) as percent,
+		a.metric,a.datetime from 
+		(select 
+		ROUND(UNIX_TIMESTAMP(create_date)) as time_sec,
+		all_operation_os,
+		used_operation_os,
+		'测试' as metric,
+		concat(date_format(create_date,'%Y-%m-%d %H'),':00:00') as datetime
+		from tk_alarm_coverage
+		WHERE zone in ('test')
+		and operation_os = #{type,jdbcType=VARCHAR}
+		) a
+		group by a.time_sec,a.datetime)
+		union
+		(select a.time_sec,
+		sum(used_operation_os) as value,
+		(case when sum(a.all_operation_os) = 0 then 0 else ROUND((sum(a.used_operation_os) / sum(a.all_operation_os))*100,2) end) as percent,
+		a.metric,a.datetime from 
+		(select 
+		ROUND(UNIX_TIMESTAMP(create_date)) as time_sec,
+		all_operation_os,
+		used_operation_os,
+		'开发' as metric,
+		concat(date_format(create_date,'%Y-%m-%d %H'),':00:00') as datetime
+		from tk_alarm_coverage
+		WHERE zone in ('test2')
+		and operation_os = #{type,jdbcType=VARCHAR}
+		) a
+		group by a.time_sec,a.datetime)
+	</select>
+	<!-- 根据zone取得覆盖度数据 -->
+	<select id="getCoverageByZone" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select a.time_sec,
+		sum(used_operation_os) as count,
+		(case when sum(a.all_operation_os) = 0 then 0 else ROUND((sum(a.used_operation_os) / sum(a.all_operation_os))*100,2) end) as percent,
+		a.datetime from 
+		(select 
+		ROUND(UNIX_TIMESTAMP(create_date)) as time_sec,
+		used_operation_os,
+		all_operation_os,
+		concat(date_format(create_date,'%Y-%m-%d %H'),':00:00') as datetime
+		from tk_alarm_coverage
+		WHERE zone in ${zone}
+		) a
+		group by a.time_sec,a.datetime
+	</select>
+	<!-- 取得host监控覆盖度百分比 -->
+	<select id="selectCoverageHost" resultType="java.util.HashMap">
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_host' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_host_pro' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_host_test' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_host_dev' order by create_date desc limit 1)
+	</select>
+	<!-- 取得instance监控覆盖度百分比 -->
+	<select id="selectCoverageInstance" resultType="java.util.HashMap">
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_instance' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_instance_pro' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_instance_test' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_instance_dev' order by create_date desc limit 1)
+	</select>
+	<!-- 取得unit监控覆盖度百分比 -->
+	<select id="selectCoverageUnit" resultType="java.util.HashMap">
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_unit' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_unit_pro' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_unit_test' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_unit_dev' order by create_date desc limit 1)
+	</select>
+	<!-- 取得rdb监控覆盖度百分比 -->
+	<select id="selectCoverageRdb" resultType="java.util.HashMap">
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_rdb' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_rdb_pro' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_rdb_test' order by create_date desc limit 1)
+		union
+		(select base_type,percent from tk_coverage_percent where base_type = 'cmdb_rdb_dev' order by create_date desc limit 1)
+	</select>
+	<!-- 取得监控覆盖数量 -->
+	<select id="getCoverageAmount" resultType="java.util.HashMap">
+		select 
+		UNIX_TIMESTAMP(NOW()) as time_sec,
+		sum(used_operation_os) as value 
+		from 
+		((SELECT * FROM tk_alarm_coverage WHERE zone = 'all' and operation_os = 'windows' order by create_date desc limit 1)
+		union all
+		(SELECT * FROM tk_alarm_coverage WHERE zone = 'all' and operation_os = 'psql' order by create_date desc limit 1)
+		union all
+		(SELECT * FROM tk_alarm_coverage WHERE zone = 'all' and operation_os = 'linux' order by create_date desc limit 1)
+		union all
+		(SELECT * FROM tk_alarm_coverage WHERE zone = 'all' and operation_os = 'mysql' order by create_date desc limit 1)) a
+	</select>
+	<!-- 插入监控覆盖度百分比 -->
+	<insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.CoveragePercentModel">
+		insert into tk_coverage_percent
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="compareType != null">
+				compare_type,
+			</if>
+			<if test="compareCount != null">
+				compare_count,
+			</if>
+			<if test="baseType != null">
+				base_type,
+			</if>
+			<if test="baseCount != null">
+				base_count,
+			</if>
+			<if test="intersectionCount != null">
+				intersection_count,
+			</if>
+			<if test="percent != null">
+				percent,
+			</if>
+			<if test="createDate != null">
+				create_date,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="compareType != null">
+				#{compareType,jdbcType=VARCHAR},
+			</if>
+			<if test="compareCount != null">
+				#{compareCount,jdbcType=VARCHAR},
+			</if>
+			<if test="baseType != null">
+				#{baseType,jdbcType=VARCHAR},
+			</if>
+			<if test="baseCount != null">
+				#{baseCount,jdbcType=VARCHAR},
+			</if>
+			<if test="intersectionCount != null">
+				#{intersectionCount,jdbcType=VARCHAR},
+			</if>
+			<if test="percent != null">
+				#{percent,jdbcType=VARCHAR},
+			</if>
+			<if test="createDate != null">
+				#{createDate,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<!-- 根据zone查询host的ip列表 -->
+	<select id="getHostIpListByZone" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+	</select>
+	<!-- 根据zone查询instance的ip列表 -->
+	<select id="getInstanceIpListByZone" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and hostname not in (select hostname from tk_host where hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+	</select>
+	<!-- 根据zone查询unit的ip列表 -->
+	<select id="getUnitIpListByZone" resultType="String">
+		select distinct ip from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and (hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+	</select>
+	<!-- 根据zone分类计算host的操作系统数量 -->
+	<select id="getCoverageCount" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select 'test' as type,os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ('test')) a
+		group by os_system)
+		union all
+		(select 'dev' as type,os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ('test2')) a
+		group by os_system)
+		union all
+		(select 'pro' as type,os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ('prod2','tkwh')) a
+		group by os_system)
+	</select>
+	<!-- 根据类型和时间区间查询历史数据 -->
+	<select id="getCoveragePercentByTime" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+		ROUND(UNIX_TIMESTAMP(create_date)) as time_sec,
+		intersection_count as value,
+		concat(date_format(create_date,'%Y-%m-%d %H'),':00:00') as datetime
+		from tk_coverage_percent
+		WHERE base_type = #{type,jdbcType=VARCHAR}
+		and create_date between #{start_time,jdbcType=VARCHAR} and #{end_time,jdbcType=VARCHAR}
+		order by time_sec asc
+	</select>
+	<!-- unit已用数量 -->
+	<select id="getCoverageUnitCountUsed" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system,status 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and status = '运营中'
+		and (hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')) a
+		group by os_system)
+	</select>
+	<!-- unit所有数量 -->
+	<select id="getCoverageUnitCountAll" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system,status 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and (hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')) a
+		group by os_system)
+	</select>
+	<!-- instance已用数量 -->
+	<select id="getCoverageInstanceCountUsed" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system,status 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and status = '运营中'
+		and hostname not in (select hostname from tk_host where hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+		) a group by os_system)
+	</select>
+	<!-- instance所有数量 -->
+	<select id="getCoverageInstanceCountAll" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		(select os_system,
+		count(os_system) as count from 
+		(select distinct ip,
+		(case when (os_system = null or os_system = '') then 'unknown' 
+		when os_system = 'Linux' then 'linux' 
+		when os_system = 'linux' then 'linux' 
+		when os_system = 'windows' then 'windows' 
+		else 'unknown' 
+		end) as os_system,status 
+		from tk_host where lower(cloud_type) = 'qingcloud' and zone_name in ${zone}
+		and hostname not in (select hostname from tk_host where hostname like 'rdb-%' or hostname like 'c-%' 
+		or hostname like 'mongo-%' or hostname like 'lb-%')
+		) a group by os_system)
+	</select>
+</mapper>

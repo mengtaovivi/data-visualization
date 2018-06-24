@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.IpAddressMapper">
+	<resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.IpAddressModel">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="qingcloud_id" jdbcType="VARCHAR" property="qingcloud_id" />
+		<result column="address" jdbcType="VARCHAR" property="address" />
+		<result column="type" jdbcType="VARCHAR" property="type" />
+		<result column="id_in_cloud" jdbcType="VARCHAR" property="id_in_cloud" />
+		<result column="cloud_type" jdbcType="VARCHAR" property="cloud_type" />
+		<result column="instance_id" jdbcType="VARCHAR" property="instance_id" />
+		<result column="object_id" jdbcType="VARCHAR" property="object_id" />
+		<result column="object_version" jdbcType="VARCHAR" property="object_version" />
+		<result column="creator" jdbcType="VARCHAR" property="creator" />
+		<result column="ctime" jdbcType="VARCHAR" property="ctime" />
+		<result column="create_time" jdbcType="VARCHAR" property="create_time" />
+		<result column="os_system" jdbcType="VARCHAR" property="os_system" />
+		<result column="status" jdbcType="VARCHAR" property="status" />
+	</resultMap>
+	<!-- 查询ip地址列表 -->
+	<select id="getAllIp" resultType="String">
+		select distinct address from tk_ip_address where address is not null and address &lt;&gt; '' and 
+	</select>
+	<!-- 插入ip地址列表 -->
+	<insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="com.taikang.dataVis.domain.IpAddressModel">
+		insert into tk_ip_address
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="qingcloud_id != null">
+				qingcloud_id,
+			</if>
+			<if test="address != null">
+				address,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+			<if test="id_in_cloud != null">
+				id_in_cloud,
+			</if>
+			<if test="cloud_type != null">
+				cloud_type,
+			</if>
+			<if test="instance_id != null">
+				instance_id,
+			</if>
+			<if test="object_id != null">
+				object_id,
+			</if>
+			<if test="object_version != null">
+				object_version,
+			</if>
+			<if test="creator != null">
+				creator,
+			</if>
+			<if test="ctime != null">
+				ctime,
+			</if>
+			<if test="create_time != null">
+				create_time,
+			</if>
+			<if test="os_system != null">
+				os_system,
+			</if>
+			<if test="status != null">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="qingcloud_id != null">
+				#{qingcloud_id,jdbcType=VARCHAR},
+			</if>
+			<if test="address != null">
+				#{address,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=VARCHAR},
+			</if>
+			<if test="id_in_cloud != null">
+				#{id_in_cloud,jdbcType=VARCHAR},
+			</if>
+			<if test="cloud_type != null">
+				#{cloud_type,jdbcType=VARCHAR},
+			</if>
+			<if test="instance_id != null">
+				#{instance_id,jdbcType=VARCHAR},
+			</if>
+			<if test="object_id != null">
+				#{object_id,jdbcType=VARCHAR},
+			</if>
+			<if test="object_version != null">
+				#{object_version,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="ctime != null">
+				#{ctime,jdbcType=VARCHAR},
+			</if>
+			<if test="create_time != null">
+				#{create_time,jdbcType=VARCHAR},
+			</if>
+			<if test="os_system != null">
+				#{os_system,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				#{status,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<!-- 批量插入ip地址列表 -->
+    <insert id="saveBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into tk_ip_address (
+		id,name,qingcloud_id,address,type,id_in_cloud,cloud_type,
+		instance_id,object_id,object_version,creator,ctime,create_time,os_system,status )
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.id},#{item.name},#{item.qingcloud_id},#{item.address},#{item.type},#{item.id_in_cloud},
+            #{item.cloud_type},#{item.instance_id},#{item.object_id},#{item.object_version},#{item.creator},#{item.ctime},#{item.create_time}
+            ,#{item.os_system},#{item.status}
+            )
+        </foreach>
+    </insert>
+    <!-- 删除所有数据 -->
+    <delete id="deleteAll">
+		delete from tk_ip_address
+	</delete>
+</mapper>

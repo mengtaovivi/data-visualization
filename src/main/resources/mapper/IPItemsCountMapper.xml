@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.IPItemsCountMapper">
+    <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.IPItemsCount">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="ip" jdbcType="VARCHAR" property="ip"/>
+        <result column="items_count" jdbcType="BIGINT" property="itemsCount"/>
+        <result column="hostid" jdbcType="VARCHAR" property="hostid"/>
+        <result column="create_date" jdbcType="VARCHAR" property="createDate"/>
+        <result column="enable_flag" jdbcType="VARCHAR" property="enableFlag"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+      id, ip, items_count, hostid, create_date, enable_flag
+    </sql>
+    <select id="get" parameterType="com.taikang.dataVis.domain.TkAlarmCoverage" resultMap="BaseResultMap">
+		 select
+        <include refid="Base_Column_List"/>
+        from tk_ip_itemscount
+         where id = #{id,jdbcType=BIGINT}
+	</select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tk_ip_itemscount
+    </select>
+
+	<!--enable_flag取默认值，id是自动-->
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tk_ip_itemscount (ip, items_count, hostid, 
+        create_date) 
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.ip},#{item.itemsCount,jdbcType=BIGINT},#{item.hostid},
+            #{item.createDate})
+        </foreach>
+    </insert>
+    
+    <!--删除ip对应监控点所有信息，以便全量更新-->
+    <delete id="deleteAll">
+        DELETE FROM tk_ip_itemscount 
+    </delete>
+    
+    <select id="getItemsAmountByHostIP" resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in(SELECT DISTINCT ip FROM tk_host)
+    </select>
+    
+    <select id="getItemsAmountByInstancetIP" resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in(
+        SELECT DISTINCT ip FROM tk_host where
+        INSTR(display_name,'c-') !=1 and INSTR(display_name,'rdb-')!=1 and 
+        INSTR(display_name,'lb-')!=1 and INSTR(display_name,'mongo-')!=1
+        )
+    </select>
+    
+    <select id="getItemsAmountByHostIPZone" parameterType="String" resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in(SELECT DISTINCT ip FROM tk_host
+        <if test="_parameter != null and _parameter =='pro'">
+			where zone_name in ('prod2','tkwh')
+	   </if>
+	   <if test="_parameter != null and _parameter =='dev'">
+			where zone_name ='test2'
+	   </if>
+	    <if test="_parameter != null and _parameter =='test'">
+			where zone_name ='test'
+	   </if>
+	    <if test="_parameter != null and _parameter =='other'">
+			where zone_name =''
+	   </if>
+        )
+    </select>
+    
+    <select id="getItemsAmountByInstancetIPZone" parameterType="String" resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in(SELECT DISTINCT ip FROM tk_host
+        where
+        INSTR(display_name,'c-') !=1 and INSTR(display_name,'rdb-')!=1 and 
+        INSTR(display_name,'lb-')!=1 and INSTR(display_name,'mongo-')!=1
+        <if test="_parameter != null and _parameter =='pro'">
+			and zone_name in ('prod2','tkwh')
+	   </if>
+	   <if test="_parameter != null and _parameter =='dev'">
+			and zone_name ='test2'
+	   </if>
+	    <if test="_parameter != null and _parameter =='test'">
+			and zone_name ='test'
+	   </if>
+	    <if test="_parameter != null and _parameter =='other'">
+			and zone_name =''
+	   </if>
+        )
+    </select>
+    
+    <select id="getItemsAmountByRdbIP" resultType="Long" >
+        SELECT sum(items_count) as value
+		FROM tk_ip_itemscount
+		WHERE ip in(SELECT master_ip ip FROM tk_rdb UNION SELECT rvip ip FROM tk_rdb UNION SELECT wvip ip FROM tk_rdb)
+    </select>
+    
+    <select id="getItemsAmountByRdbIPZone" parameterType="String" resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in(
+        SELECT ip FROM (
+        SELECT zone_name,master_ip ip FROM tk_rdb 
+        UNION 
+        SELECT zone_name,rvip ip FROM tk_rdb 
+        UNION 
+        SELECT zone_name,wvip ip FROM tk_rdb) a 
+        <if test="_parameter != null and _parameter =='pro'">
+			where a.zone_name in ('prod2','tkwh')
+	   </if>
+	   <if test="_parameter != null and _parameter =='dev'">
+			where a.zone_name ='test2'
+	   </if>
+	    <if test="_parameter != null and _parameter =='test'">
+			where a.zone_name ='test'
+	   </if>
+	   <if test="_parameter != null and _parameter =='other'">
+			where a.zone_name =''
+	   </if>
+        )
+    </select>
+    
+     <select id="getItemsAmountByIP"  resultType="Long" >
+        SELECT sum(items_count) count FROM tk_ip_itemscount WHERE ip in
+        <foreach collection="array" item="ips" open="(" close=")" separator=",">
+			#{ips}
+		</foreach>
+    </select>
+    
+     <select id="getAllcount" resultType="Long" >
+        SELECT count(*) FROM tk_ip_itemscount 
+    </select>
+    
+    <select id="getItemsAmountBySerchWord" resultType="Long" >
+    SELECT (CASE  WHEN a.count IS NULL THEN 0 ELSE a.count END)+(CASE  WHEN b.count IS NULL THEN 0 ELSE b.count END)+(CASE  WHEN c.count IS NULL THEN 0 ELSE c.count END) total_count from 
+
+    (select   sum(items_count) count   from   tk_ip_itemscount i  inner   join   
+    (SELECT  DISTINCT ip FROM tk_host WHERE  `status`='运营中' 
+        AND ( INSTR(ip,#{serch_word})>0 OR INSTR (os_system ,#{serch_word})>0 
+        OR INSTR (os_release ,#{serch_word})>0 OR INSTR (display_name ,#{serch_word})>0) )h     on   i.ip=h.ip) a,
+
+    (select  sum(items_count) count   from   tk_ip_itemscount i  inner   join  
+    (SELECT  rvip,wvip,master_ip FROM tk_rdb WHERE  `status`='active' 
+        AND ( INSTR(master_ip,#{serch_word})>0 OR INSTR (rvip ,#{serch_word})>0 
+        OR INSTR (wvip ,#{serch_word})>0 OR INSTR (rdb_engine ,#{serch_word})>0)) r  on  (i.ip=r.rvip OR i.ip=r.wvip OR i.ip=r.master_ip))b,
+
+    (select  sum(items_count) count   from   tk_ip_itemscount i  inner   join  
+    ( SELECT  private_ips , address FROM tk_loadbalancer WHERE  `status`='active' 
+        AND ( INSTR(address,#{serch_word})>0 OR INSTR (private_ips ,#{serch_word})>0 
+        OR INSTR (app_name ,#{serch_word})>0 OR INSTR (user ,#{serch_word})>0)) l     on   (i.ip=l.private_ips OR i.ip=l.address )) c
+    </select>
+</mapper>

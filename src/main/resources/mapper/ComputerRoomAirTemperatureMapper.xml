@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.ComputerRoomAirTemperatureMapper">
+  <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.ComputerRoomAirTemperature">
+    <id column="id" jdbcType="VARCHAR" property="id"/>
+    <result column="air_suply" jdbcType="VARCHAR" property="airSuply"/>
+    <result column="return_air" jdbcType="VARCHAR" property="returnAir"/>
+    <result column="create_time" jdbcType="VARCHAR" property="createTime"/>
+    <result column="update_time" jdbcType="VARCHAR" property="updateTime"/>
+    <result column="computer_room_name" jdbcType="VARCHAR" property="computerRoomName"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+      id, air_suply,return_air, create_time, update_time,computer_room_name
+  </sql>
+
+  <!--创建时批量保存机房信息-->
+  <insert id="BatchInsert" parameterType="java.util.List">
+    insert into tk_computer_room_air_temperature (id, air_suply,return_air, create_time,computer_room_name) VALUES
+    <foreach collection="list" item="item" separator=",">
+      (#{item.id,jdbcType=VARCHAR},#{item.airSuply,jdbcType=VARCHAR},#{item.returnAir,jdbcType=VARCHAR},
+      #{item.createTime,jdbcType=VARCHAR},#{item.computerRoomName,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+  <!--更新数据-->
+  <update id="update" parameterType="ComputerRoomTemperature">
+    update tk_computer_room_air_temperature
+    <set>
+      <if test="null != airSuply">air_suply = #{airSuply},</if>
+      <if test="null != returnAir">return_air = #{returnAir},</if>
+      <if test="null != updateTime">update_time = #{updateTime}</if>
+    </set>
+    where id = #{id}
+  </update>
+
+  <!--根据日期查询数据-->
+  <select id="findByCreateTime" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from tk_computer_room_air_temperature where create_time = #{createTime}
+  </select>
+
+  <!--大屏-->
+  <select id="findAllTemp" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+     from tk_computer_room_air_temperature where create_time = (select max(create_time) from tk_computer_room_air_temperature) 
+     order by create_time desc
+  </select>
+  
+
+  <!--根据日期查询数据-->
+  <select id="findByMaxCreateTime" resultMap="BaseResultMap">
+    SELECT tm.create_time,tm.computer_room_name,t.air_suply,t.return_air FROM (
+    SELECT computer_room_name,MAX(create_time) create_time FROM tk_computer_room_air_temperature GROUP BY computer_room_name ) tm
+    inner join tk_computer_room_air_temperature t on  tm.create_time =t.create_time AND tm.computer_room_name=t.computer_room_name
+  </select>
+  
+  <delete id="delete" parameterType="java.util.Map">
+    delete from tk_computer_room_air_temperature where create_time = #{createTime}
+  </delete>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.ComputerRoomMapper">
+  <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.ComputerRoom">
+    <id column="id" jdbcType="VARCHAR" property="id"/>
+    <result column="frame_used" jdbcType="VARCHAR" property="frameUsed"/>
+    <result column="frame_all" jdbcType="VARCHAR" property="frameAll"/>
+    <result column="computer_room" jdbcType="VARCHAR" property="computerRoom"/>
+    <result column="power_all" jdbcType="VARCHAR" property="powerAll"/>
+    <result column="power_used" jdbcType="VARCHAR" property="powerUsed"/>
+    <result column="computer_room_name" jdbcType="VARCHAR" property="computerRoomName"/>
+    <result column="create_time" jdbcType="VARCHAR" property="createTime"/>
+    <result column="update_time" jdbcType="VARCHAR" property="updateTime"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+      id, frame_all,frame_used, computer_room, power_all,power_used, computer_room_name, create_time, update_time
+  </sql>
+  <!--查询历史全部机房信息-->
+  <select id="findAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from tk_computer_room
+    <where>
+      <if test="null != computerRoomName and ''!= computerRoomName ">
+        computer_room_name LIKE concat('%', #{computerRoomName}, '%')
+      </if>
+    </where>
+  </select>
+
+  <select id="findAllComputerRoom" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+      from tk_computer_room where create_time = (select max(create_time) from tk_computer_room) order by id
+  </select>
+
+  <!--查询当前机房列表-->
+  <select id="findCurrentAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from tk_computer_room
+    <where>
+      create_time = (select max(create_time) from tk_computer_room)
+      <if test="null != computerRoomName and ''!= computerRoomName ">
+        and computer_room_name LIKE concat('%', #{computerRoomName}, '%')
+      </if>
+    </where>
+  </select>
+  <!--获取所有日期-->
+  <select id="findAllDate" resultType="String">
+    select distinct create_time from tk_computer_room
+  </select>
+  <!--创建时批量保存机房信息-->
+  <insert id="BatchInsert" parameterType="java.util.List">
+    insert into tk_computer_room (id,computer_room_name,create_time,frame_used,frame_all,computer_room,power_used,power_all) VALUES
+    <foreach collection="list" item="item" separator=",">
+      (#{item.id,jdbcType=VARCHAR},#{item.computerRoomName,jdbcType=VARCHAR},#{item.createTime,jdbcType=VARCHAR}
+      ,#{item.frameUsed,jdbcType=VARCHAR},#{item.frameAll,jdbcType=VARCHAR},#{item.computerRoom,jdbcType=VARCHAR},#{item.powerUsed,jdbcType=VARCHAR}
+      ,#{item.powerAll,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+  <update id="update" parameterType="ComputerRoom">
+    update tk_computer_room
+    <set>
+      <if test="null != frameUsed">frame_used = #{frameUsed},</if>
+      <if test="null != frameAll">frame_all = #{frameAll},</if>
+      <if test="null != computerRoom">computer_room = #{computerRoom},</if>
+      <if test="null != powerUsed">power_used = #{powerUsed},</if>
+      <if test="null != powerAll">power_all = #{powerAll},</if>
+      <if test="null != updateTime">update_time = #{updateTime}</if>
+    </set>
+    where id = #{id}
+  </update>
+  <!--根据创建时间获取列表-->
+  <select id="findByCreateTime" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from tk_computer_room where create_time = #{createTime}
+  </select>
+</mapper>

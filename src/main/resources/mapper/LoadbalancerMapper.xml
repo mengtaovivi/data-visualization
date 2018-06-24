@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.LoadbalancerMapper">
+	<resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.LoadbalancerModel">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<id column="loadbalancer_id" jdbcType="VARCHAR" property="loadbalancerId" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="loadbalancer_name" jdbcType="VARCHAR" property="loadbalancerName" />
+		<result column="status" jdbcType="VARCHAR" property="status" />
+		<result column="private_ips" jdbcType="VARCHAR" property="privateIps" />
+		<result column="address" jdbcType="VARCHAR" property="address" />
+		<result column="cloud_type" jdbcType="VARCHAR" property="cloudType" />
+		<result column="zone_name" jdbcType="VARCHAR" property="zoneName" />
+		<result column="create_time" jdbcType="VARCHAR" property="createTime" />
+		<result column="status_time" jdbcType="VARCHAR" property="statusTime" />
+		<result column="app_name" jdbcType="VARCHAR" property="appName" />
+		<result column="user" jdbcType="VARCHAR" property="user" />
+		<result column="refresh_time" jdbcType="VARCHAR" property="refreshTime" />
+	</resultMap>
+	<!-- 查询Host列表 -->
+	<select id="getAllIp" resultType="String">
+		select distinct master_ip from tk_loadbalancer where lower(cloud_type) = 'qingcloud'
+	</select>
+	<!-- 批量插入Host列表 -->
+    <insert id="saveBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into tk_loadbalancer (
+        id,
+        loadbalancer_id,
+        name,
+        loadbalancer_name,
+        status,
+        private_ips,
+        address,
+        cloud_type,
+        zone_name,
+        create_time,
+        status_time,
+        app_name,
+        user,
+        refresh_time)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (
+            #{item.id},#{item.loadbalancerId},
+            #{item.name},#{item.loadbalancerName},#{item.status},#{item.privateIps},
+            #{item.address},#{item.cloudType},#{item.zoneName},#{item.createTime},#{item.statusTime},
+            #{item.appName},#{item.user},#{item.refreshTime}
+            )
+        </foreach>
+    </insert>
+    <!-- 删除所有数据 -->
+    <delete id="deleteAll">
+		delete from tk_loadbalancer
+	</delete>
+	
+	<select id="getCoverageAllcountBytype" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  zone_name type, count(*) zcount FROM tk_loadbalancer WHERE  `status`='active' 
+        AND ( INSTR(address,#{serch_word})>0 OR INSTR (private_ips ,#{serch_word})>0 
+        OR INSTR (app_name ,#{serch_word})>0 OR INSTR (user ,#{serch_word})>0)
+        AND (address in(SELECT DISTINCT ip FROM tk_ip_itemscount) 
+       OR private_ips in(SELECT DISTINCT ip FROM tk_ip_itemscount)) GROUP BY zone_name 
+	</select>
+	
+	<select id="getAllcountBytype" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  zone_name type, count(*) zcount FROM tk_loadbalancer WHERE  `status`='active' 
+        AND ( INSTR(address,#{serch_word})>0 OR INSTR (private_ips ,#{serch_word})>0 
+        OR INSTR (app_name ,#{serch_word})>0 OR INSTR (user ,#{serch_word})>0)
+        GROUP BY zone_name 
+	</select>
+    
+</mapper>

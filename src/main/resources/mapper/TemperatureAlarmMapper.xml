@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taikang.dataVis.mapper.TemperatureAlarmMapper">
+    <resultMap id="BaseResultMap" type="com.taikang.dataVis.domain.TemperatureAlarm">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="temperature_val" jdbcType="VARCHAR" property="temperatureVal" />
+		<result column="humidity" jdbcType="VARCHAR" property="humidity" />
+		<result column="alarm_all" jdbcType="VARCHAR" property="alarmAll" />
+		<result column="alarm_alert" jdbcType="VARCHAR" property="alarmAlert" />
+		<result column="alarm_normal" jdbcType="VARCHAR" property="alarmNormal" />
+		<result column="alarm_early_warning" jdbcType="VARCHAR" property="alarmEarlyWarning" />
+		<result column="computer_room_name" jdbcType="VARCHAR" property="computerRoomName" />
+		<result column="create_time" jdbcType="VARCHAR" property="createTime" />
+		<result column="update_time" jdbcType="VARCHAR" property="updateTime" />
+	</resultMap>
+    <sql id="Base_Column_List">
+      id,temperature_val,humidity,alarm_all,alarm_alert,alarm_normal,alarm_early_warning,computer_room_name,create_time,update_time
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tk_temperature_alarm
+    </select>
+    
+    
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" parameterType="ElectricityCount">
+        insert into tk_temperature_alarm
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+           <if test="id != null">
+                id,
+            </if>
+            <if test="temperatureVal != null">
+                temperature_val,
+            </if>
+            <if test="humidity != null">
+                humidity,
+            </if>
+            <if test="alarmAll != null">
+                alarm_all,
+            </if>
+            <if test="alarmAlert != null">
+                alarm_alert,
+            </if>
+            <if test="alarmNormal != null">
+                alarm_normal,
+            </if>
+            <if test="alarmEarlyWarning != null">
+                alarm_early_warning,
+            </if>
+            <if test="computerRoomName != null">
+                computer_room_name
+            </if>
+            <if test="createTime != null">
+                create_time
+            </if>
+             <if test="updateTime != null">
+                update_time
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="temperatureVal != null">
+                #{temperatureVal,jdbcType=VARCHAR},
+            </if>
+            <if test="humidity != null">
+                #{humidity,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmAll != null">
+                #{alarmAll,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmAlert != null">
+                #{alarmAlert,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmNormal != null">
+                #{alarmNormal,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmEarlyWarning != null">
+                #{alarmEarlyWarning,jdbcType=VARCHAR},
+            </if>
+            <if test="computerRoomName != null">
+                #{computerRoomName,jdbcType=TIMESTAMP}
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.taikang.dataVis.domain.TemperatureAlarm">
+        update tk_temperature_alarm
+        <set>
+            <if test="temperatureVal != null">
+                temperature_val = #{temperatureVal,jdbcType=VARCHAR},
+            </if>
+            <if test="humidity != null">
+                humidity = #{humidity,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmAll != null">
+                alarm_all = #{alarmAll,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmAlert != null">
+                alarm_alert = #{alarmAlert,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmNormal != null">
+                alarm_normal = #{alarmNormal,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmEarlyWarning != null">
+                alarm_early_warning = #{alarmEarlyWarning,jdbcType=VARCHAR},
+            </if>
+            <if test="computerRoomName != null">
+                computer_room_name = #{computerRoomName,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="deleteBatch">
+        DELETE FROM tk_temperature_alarm WHERE id IN
+        <foreach collection="list" close=")" open="(" separator="," item="id">
+            #{id,jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+    <select id="findMonthMaxAndMin" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT count(*) count,computer_room_name,max(temperature_val) temperature_val_max,
+        min(temperature_val) temperature_val_min,max(humidity) humidity_max,min(humidity) humidity_min FROM tk_temperature_alarm
+        <![CDATA[ WHERE create_time>#{mothtime} AND create_time<#{nowtime} GROUP BY computer_room_name  ]]>
+    </select>
+    
+    <select id="findMaxCreateTime" resultMap="BaseResultMap">
+        SELECT tm.create_time,tm.computer_room_name,t.temperature_val,t.humidity,t.alarm_all,t.alarm_alert,t.alarm_normal,t.alarm_early_warning FROM (
+        SELECT computer_room_name,MAX(create_time) create_time FROM tk_temperature_alarm GROUP BY computer_room_name ) tm
+        inner join tk_temperature_alarm t on  tm.create_time =t.create_time AND tm.computer_room_name=t.computer_room_name
+    </select>
+</mapper>
